@@ -31,12 +31,20 @@
 #   * gives information about the project
 #   * explains how to run and use the project
 
+import sys
+
 def greetUser():
     '''Greets the user, prompts for their name, and displays the menu.'''
-    name = input("\n\nHi.  Welcome to your To Do App.  What is your name? ")
-    print(f"\n\tGreetings, {name}. Please choose from the following menu:\n")
-    displayMenu()
-    return name
+    try:
+        name = input("\n\nHi.  Welcome to your To Do App.  What is your name? ")
+        if not name.strip():
+            name = "User"
+        print(f"\n\tGreetings, {name}. Please choose from the following menu:\n")
+        displayMenu()
+        return name
+    except EOFError:
+        print(f"\n\nNo input received, exiting now.  Goodbye!\n\n")
+        sys.exit(1)
 
 def displayMenu():
     '''Prints a menu with instructions on how to choose the options.'''
@@ -51,8 +59,13 @@ def displayMenu():
     
 def promptUser():
     '''Prompts user for a command.'''
-    user_input = input("Enter a command: ")
-    processCommands(user_input)
+    try:
+        user_input = input("Enter a command: ")
+    except EOFError:
+        print(f"\n\nThe program was ended forcibly by the user.  Exiting now.")
+        quitProgram()
+    else:
+        processCommands(user_input)
 
 def addTask(task, taskList=[]):
     '''Returns the given task list after appending the given task to it.'''
@@ -63,13 +76,17 @@ def addTask(task, taskList=[]):
 
 def viewTasks(taskList):
     '''Prints out the given task list if it is not empty.'''
-    if taskList != []:
-        print('\n\t\t\tTASKS:\n\t\t\t========================')
-        for task in taskList:
-            print(f"\t\t\t{task}")
-        print('\t\t\t========================\n')
-    else:
-        print("\n\tThere are no tasks to view.")
+    try:
+        if not taskList:
+            print("\n\tThere are no tasks to view.")
+            return
+        else:
+            print('\n\t\t\tTASKS:\n\t\t\t========================')
+            for task in taskList:
+                print(f"\t\t\t{task}")
+            print('\t\t\t========================\n')
+    except TypeError:
+        print("\n\tInvalid task list supplied")
 
 def deleteTask(taskList, task):
     '''Deletes the specified task from the given taskList, if it exists.'''
@@ -81,7 +98,7 @@ def deleteTask(taskList, task):
         else:
             print(f'\n\tThe task "{task}" does not exist.')
             return taskList
-    except TypeError as e:
+    except Exception as e:
         print(f"\n\t\tAn exception has ocurred: {e}")
     
 def processCommands(userInput, task_list=[]):
@@ -103,7 +120,10 @@ def processCommands(userInput, task_list=[]):
 def quitProgram():
     '''Exits the program.'''
     print(f"\n\nGoodbye!\n\n")
-    quit()
+    try:
+        sys.exit(0)
+    except SystemExit:
+        raise
 
 tasks = []
 name = greetUser()
